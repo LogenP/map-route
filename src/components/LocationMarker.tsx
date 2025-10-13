@@ -284,16 +284,9 @@ export default function LocationMarker({
         onUpdate(data.location);
       }
 
-      setEditState({
-        isEditing: false,
-        isSaving: false,
-        error: null,
-        success: true,
-      });
-
       console.log('[LocationMarker] Successfully updated location:', location.id);
 
-      // Close the popup after successful save
+      // Close the popup immediately after successful save
       onClose();
     } catch (error) {
       // Revert optimistic update on error
