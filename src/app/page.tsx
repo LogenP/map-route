@@ -381,8 +381,8 @@ export default function HomePage(): JSX.Element {
               id="followUpDate"
               value={state.selectedFollowUpDate}
               onChange={handleFollowUpDateChange}
-              className="w-full max-w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
-              style={{ maxWidth: '100%', boxSizing: 'border-box' }}
+              className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
+              style={{ maxWidth: '250px', boxSizing: 'border-box' }}
               aria-label="Select follow-up date to filter locations"
             />
             <p className="text-xs text-gray-500 mt-2 leading-relaxed">
