@@ -367,12 +367,12 @@ export default function HomePage(): JSX.Element {
 
           {/* Legend Panel Content */}
           <div
-            className="absolute top-16 left-4 z-40 bg-white rounded-lg shadow-lg p-4 max-w-[calc(100vw-2rem)] w-80"
+            className="absolute top-16 left-4 z-40 bg-white rounded-lg shadow-lg p-3 max-w-[calc(100vw-2rem)] w-80 overflow-hidden"
             role="region"
             aria-label="Map controls"
           >
           {/* Follow-up Date Picker */}
-          <div className="mb-4 pb-4 border-b border-gray-200">
+          <div className="mb-4 pb-4 border-b border-gray-200 overflow-x-hidden">
             <label htmlFor="followUpDate" className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
               Follow-up Date Filter
             </label>
@@ -381,8 +381,8 @@ export default function HomePage(): JSX.Element {
               id="followUpDate"
               value={state.selectedFollowUpDate}
               onChange={handleFollowUpDateChange}
-              className="w-full max-w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
-              style={{ maxWidth: '100%' }}
+              className="w-full max-w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
+              style={{ maxWidth: '100%', boxSizing: 'border-box' }}
               aria-label="Select follow-up date to filter locations"
             />
             <p className="text-xs text-gray-500 mt-2 leading-relaxed">
