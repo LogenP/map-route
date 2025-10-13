@@ -17,6 +17,7 @@ export const STATUS_TYPES = {
   FOLLOW_UP: 'Follow-up',
   NOT_INTERESTED: 'Not interested',
   REVISIT: 'Revisit',
+  LOCATION_NOT_FOUND: 'Location not found',
 } as const;
 
 /**
@@ -34,6 +35,7 @@ export type StatusType = typeof STATUS_TYPES[keyof typeof STATUS_TYPES];
  * - Follow-up (Yellow): Requires follow-up action
  * - Not interested (Red): Declined or not interested
  * - Revisit (Orange): To be revisited later
+ * - Location not found (Gray): Address could not be verified
  */
 export const STATUS_COLORS: Record<StatusType, string> = {
   [STATUS_TYPES.PROSPECT]: '#4285F4',      // Google Blue
@@ -41,6 +43,7 @@ export const STATUS_COLORS: Record<StatusType, string> = {
   [STATUS_TYPES.FOLLOW_UP]: '#FBBC04',     // Google Yellow
   [STATUS_TYPES.NOT_INTERESTED]: '#EA4335', // Google Red
   [STATUS_TYPES.REVISIT]: '#FF6D00',       // Orange
+  [STATUS_TYPES.LOCATION_NOT_FOUND]: '#9E9E9E', // Gray
 };
 
 /**
@@ -58,6 +61,7 @@ export const STATUS_LABELS: Record<StatusType, string> = {
   [STATUS_TYPES.FOLLOW_UP]: 'Follow-up',
   [STATUS_TYPES.NOT_INTERESTED]: 'Not Interested',
   [STATUS_TYPES.REVISIT]: 'Revisit',
+  [STATUS_TYPES.LOCATION_NOT_FOUND]: 'Location Not Found',
 };
 
 /**
