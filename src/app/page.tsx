@@ -412,21 +412,31 @@ export default function HomePage(): JSX.Element {
 
       {/* InfoWindow Overlay */}
       {state.selectedLocation && (
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
-          style={{
-            maxWidth: '90vw',
-            maxHeight: '80vh',
-            overflowY: 'auto',
-          }}
-        >
-          <LocationMarker
-            location={state.selectedLocation}
-            isOpen={true}
-            onClose={handleInfoWindowClose}
-            onUpdate={handleLocationUpdate}
+        <>
+          {/* Backdrop - clicking closes the popup */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-30 z-40"
+            onClick={handleInfoWindowClose}
+            aria-label="Close popup"
           />
-        </div>
+
+          {/* Popup Content */}
+          <div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+            }}
+          >
+            <LocationMarker
+              location={state.selectedLocation}
+              isOpen={true}
+              onClose={handleInfoWindowClose}
+              onUpdate={handleLocationUpdate}
+            />
+          </div>
+        </>
       )}
 
       {/* Refresh Button (Floating Action Button) */}
