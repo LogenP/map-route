@@ -72,6 +72,8 @@ export interface UpdateLocationRequest {
   status?: string;
   /** New notes text (optional) */
   notes?: string;
+  /** New follow-up date in YYYY-MM-DD format (optional) */
+  followUpDate?: string;
 }
 
 /**
