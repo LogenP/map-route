@@ -358,7 +358,7 @@ export default function HomePage(): JSX.Element {
       {/* Expandable Legend Panel */}
       {isLegendExpanded && (
         <div
-          className="absolute top-16 left-4 z-40 bg-white rounded-lg shadow-lg p-4 max-w-[calc(100vw-2rem)] sm:max-w-sm"
+          className="absolute top-16 left-4 right-4 z-40 bg-white rounded-lg shadow-lg p-4 sm:max-w-sm sm:right-auto"
           role="region"
           aria-label="Map controls"
         >
