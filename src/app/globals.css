@@ -1,0 +1,667 @@
+/**
+ * Global Styles - Mobile-First CSS
+ *
+ * This file contains all global styles for the Map Route application.
+ * Follows mobile-first design principles with responsive breakpoints.
+ *
+ * Breakpoints:
+ * - Mobile: 0-639px (base styles)
+ * - Tablet: 640px-1023px (sm:)
+ * - Desktop: 1024px+ (lg:)
+ */
+
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+/**
+ * Root element configuration
+ * - Full viewport height
+ * - Prevent overflow for full-screen map
+ */
+:root {
+  /* CSS Variables for consistent theming */
+  --color-primary: #4285F4;
+  --color-success: #34A853;
+  --color-warning: #FBBC04;
+  --color-error: #EA4335;
+  --color-info: #4285F4;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Z-index layers */
+  --z-map: 1;
+  --z-overlay: 10;
+  --z-modal: 100;
+  --z-toast: 1000;
+}
+
+/**
+ * Reset and base styles
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  /* Prevent text size adjustment on iOS */
+  -webkit-text-size-adjust: 100%;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; /* Prevent body scroll */
+  background-color: #f5f5f5;
+  color: #333333;
+}
+
+/* Next.js root div */
+#__next {
+  height: 100%;
+}
+
+/* ============================================================================
+   MOBILE-FIRST TOUCH OPTIMIZATIONS
+   ============================================================================ */
+
+/**
+ * Touch manipulation
+ * - Disable double-tap zoom on buttons and interactive elements
+ * - Enable fast tap on buttons (removes 300ms delay)
+ */
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/**
+ * Prevent text selection on UI elements (not content)
+ */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/**
+ * Prevent pull-to-refresh interference on mobile
+ */
+body {
+  overscroll-behavior-y: none;
+}
+
+/* ============================================================================
+   LAYOUT COMPONENTS
+   ============================================================================ */
+
+/**
+ * Full-screen map container
+ * - Takes up entire viewport
+ * - No margins or padding
+ * - Z-index layer for map
+ */
+.map-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  overflow: hidden;
+  z-index: var(--z-map);
+}
+
+/**
+ * Overlay container for loading/error states
+ */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.95);
+  z-index: var(--z-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ============================================================================
+   LOADING SPINNER
+   ============================================================================ */
+
+/**
+ * Loading spinner component
+ */
+.spinner {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/**
+ * Loading container with text
+ */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  color: #666666;
+  font-weight: 500;
+}
+
+/* Tablet and up */
+@media (min-width: 640px) {
+  .spinner {
+    width: 64px;
+    height: 64px;
+    border-width: 5px;
+  }
+
+  .loading-text {
+    font-size: 1rem;
+  }
+}
+
+/* ============================================================================
+   ERROR COMPONENT
+   ============================================================================ */
+
+/**
+ * Error message display
+ */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.error-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-error);
+}
+
+.error-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333333;
+  margin: 0;
+}
+
+.error-message {
+  font-size: 0.875rem;
+  color: #666666;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Tablet and up */
+@media (min-width: 640px) {
+  .error-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .error-title {
+    font-size: 1.5rem;
+  }
+
+  .error-message {
+    font-size: 1rem;
+  }
+}
+
+/* ============================================================================
+   BUTTON COMPONENTS
+   ============================================================================ */
+
+/**
+ * Base button styles
+ * - Minimum 44x44px touch target (iOS HIG)
+ * - Mobile-first sizing
+ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Primary button */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:active {
+  background-color: #1a73e8;
+  transform: scale(0.98);
+}
+
+/* Disabled on desktop only (use :active on mobile) */
+@media (min-width: 1024px) {
+  .btn-primary:hover {
+    background-color: #1a73e8;
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Error/Retry button */
+.btn-error {
+  background-color: var(--color-error);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-error:active {
+  background-color: #d33b2e;
+  transform: scale(0.98);
+}
+
+@media (min-width: 1024px) {
+  .btn-error:hover {
+    background-color: #d33b2e;
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Floating action button (FAB) */
+.btn-fab {
+  position: absolute;
+  top: var(--spacing-xl);
+  right: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background-color: #ffffff;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-overlay);
+}
+
+.btn-fab:active {
+  transform: scale(0.95);
+  box-shadow: var(--shadow-md);
+}
+
+@media (min-width: 1024px) {
+  .btn-fab:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* My Location button (bottom-right) */
+.btn-location {
+  position: absolute;
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-overlay);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-location:active {
+  transform: scale(0.95);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-location:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 1024px) {
+  .btn-location:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Tablet and up button sizing */
+@media (min-width: 640px) {
+  .btn {
+    font-size: 1rem;
+    padding: 0.875rem 1.75rem;
+  }
+}
+
+/* ============================================================================
+   MAP LEGEND
+   ============================================================================ */
+
+/**
+ * Status legend component
+ * - Shows color coding for location statuses
+ * - Mobile-first compact design
+ * - Positioned in top-left corner
+ */
+.map-legend {
+  position: absolute;
+  top: var(--spacing-xl);
+  left: var(--spacing-xl);
+  background-color: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-md);
+  z-index: var(--z-overlay);
+  max-width: calc(100vw - 4rem); /* Prevent overflow on small screens */
+}
+
+.map-legend-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.map-legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.75rem;
+  color: #666666;
+}
+
+.map-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Tablet and up - horizontal layout */
+@media (min-width: 640px) {
+  .map-legend {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+
+  .map-legend-title {
+    font-size: 0.875rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .map-legend-items {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+
+  .map-legend-item {
+    font-size: 0.875rem;
+  }
+
+  .map-legend-color {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Desktop - more spacing */
+@media (min-width: 1024px) {
+  .map-legend {
+    padding: var(--spacing-lg);
+  }
+
+  .map-legend-items {
+    gap: var(--spacing-lg);
+  }
+}
+
+/* iOS safe area support */
+@supports (padding: max(0px)) {
+  .map-legend {
+    top: calc(var(--spacing-xl) + env(safe-area-inset-top));
+    left: calc(var(--spacing-xl) + env(safe-area-inset-left));
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+/**
+ * Focus styles for keyboard navigation
+ */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/**
+ * Screen reader only content
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================================================
+   IOS SAFE AREA SUPPORT
+   ============================================================================ */
+
+/**
+ * Support for iOS notches and home indicators
+ * Uses env() CSS function for safe-area-inset
+ */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .map-container {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .btn-fab {
+    top: calc(var(--spacing-xl) + env(safe-area-inset-top));
+    right: calc(var(--spacing-xl) + env(safe-area-inset-right));
+  }
+
+  .btn-location {
+    bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+    right: calc(var(--spacing-xl) + env(safe-area-inset-right));
+  }
+}
+
+/* ============================================================================
+   GOOGLE MAPS CUSTOMIZATION
+   ============================================================================ */
+
+/**
+ * Hide Google Maps UI elements we don't want
+ */
+/* Hide the "Terms" link at bottom left */
+.map-container a[href^="https://www.google.com/intl/"][href*="help/terms_maps"] {
+  display: none !important;
+}
+
+/* Hide the Google logo keyboard shortcut button */
+.map-container button[aria-label="Keyboard shortcuts"] {
+  display: none !important;
+}
+
+/* Hide the map type control (satellite/map toggle) */
+.map-container button[aria-label="Show satellite imagery"],
+.map-container button[aria-label="Show street map"],
+.map-container button[aria-label^="Map"],
+.map-container button[aria-label^="Satellite"],
+.map-container .gm-control-active {
+  display: none !important;
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+/**
+ * Hide element on mobile, show on desktop
+ */
+.mobile-hidden {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .mobile-hidden {
+    display: block;
+  }
+}
+
+/**
+ * Show element on mobile only
+ */
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/**
+ * Will-change optimization for animated elements
+ */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  body {
+    overflow: visible;
+  }
+
+  .btn-fab,
+  .overlay {
+    display: none;
+  }
+}
