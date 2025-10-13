@@ -76,6 +76,7 @@ export default function Map({
   const markersRef = useRef<globalThis.Map<number, google.maps.Marker>>(new globalThis.Map());
   const userLocationMarkerRef = useRef<google.maps.Marker | null>(null);
   const isInitializedRef = useRef<boolean>(false);
+  const hasSetInitialBoundsRef = useRef<boolean>(false);
 
   /**
    * Initialize Google Maps API and create map instance
@@ -276,9 +277,11 @@ export default function Map({
       }
     });
 
-    // Fit map to show all markers
-    if (validLocations.length > 0) {
+    // Fit map to show all markers only on initial load
+    // Don't reset bounds when locations update (e.g., when user saves changes)
+    if (validLocations.length > 0 && !hasSetInitialBoundsRef.current) {
       mapInstance.fitBounds(bounds);
+      hasSetInitialBoundsRef.current = true;
 
       // If only one marker, set a reasonable zoom level
       if (validLocations.length === 1) {

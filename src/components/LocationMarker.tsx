@@ -291,12 +291,10 @@ export default function LocationMarker({
         success: true,
       });
 
-      // Clear success message after 2 seconds
-      setTimeout(() => {
-        setEditState((prev) => ({ ...prev, success: false }));
-      }, 2000);
-
       console.log('[LocationMarker] Successfully updated location:', location.id);
+
+      // Close the popup after successful save
+      onClose();
     } catch (error) {
       // Revert optimistic update on error
       onUpdate(location);
@@ -323,6 +321,7 @@ export default function LocationMarker({
     editedNotes,
     editedFollowUpDate,
     onUpdate,
+    onClose,
   ]);
 
   /**
@@ -463,17 +462,50 @@ export default function LocationMarker({
         >
           Follow-up Date
         </label>
-        <input
-          type="date"
-          id={`followUpDate-${location.id}`}
-          value={editedFollowUpDate}
-          onChange={handleFollowUpDateChange}
-          disabled={editState.isSaving}
-          className="w-full min-h-[44px] px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors touch-manipulation"
-          style={{
-            fontSize: '16px', // Prevent iOS zoom on focus
-          }}
-        />
+        <div className="flex gap-2">
+          <input
+            type="date"
+            id={`followUpDate-${location.id}`}
+            value={editedFollowUpDate}
+            onChange={handleFollowUpDateChange}
+            disabled={editState.isSaving}
+            className="flex-1 min-h-[44px] px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors touch-manipulation"
+            style={{
+              fontSize: '16px', // Prevent iOS zoom on focus
+              maxWidth: '100%',
+            }}
+          />
+          {editedFollowUpDate && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditedFollowUpDate('');
+                if (!editState.isEditing) {
+                  setEditState((prev) => ({ ...prev, isEditing: true }));
+                }
+                setEditState((prev) => ({ ...prev, error: null, success: false }));
+              }}
+              disabled={editState.isSaving}
+              className="flex-shrink-0 min-h-[44px] min-w-[44px] px-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors touch-manipulation flex items-center justify-center"
+              aria-label="Clear date"
+              title="Clear date"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Notes Textarea */}

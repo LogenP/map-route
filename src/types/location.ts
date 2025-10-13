@@ -15,6 +15,7 @@ export const LOCATION_STATUSES = [
   'Follow-up',
   'Not interested',
   'Revisit',
+  'Location not found',
 ] as const;
 
 /**
@@ -24,6 +25,7 @@ export const LOCATION_STATUSES = [
  * - Follow-up → Yellow marker (requires follow-up action or additional contact)
  * - Not interested → Red marker (explicitly not interested in services)
  * - Revisit → Orange marker (needs to be revisited at a later date)
+ * - Location not found → Gray marker (address could not be located or verified)
  * - Follow-up Date Match → Purple marker (location has a follow-up date matching the selected date)
  */
 export type LocationStatus = typeof LOCATION_STATUSES[number];
@@ -32,7 +34,7 @@ export type LocationStatus = typeof LOCATION_STATUSES[number];
  * Marker color type for Google Maps markers.
  * These colors are used to render location markers based on status.
  */
-export type MarkerColor = 'blue' | 'green' | 'yellow' | 'red' | 'orange' | 'purple';
+export type MarkerColor = 'blue' | 'green' | 'yellow' | 'red' | 'orange' | 'purple' | 'gray';
 
 /**
  * Map of status values to their corresponding marker colors.
@@ -44,6 +46,7 @@ export const STATUS_COLORS: Record<LocationStatus, MarkerColor> = {
   'Follow-up': 'yellow',
   'Not interested': 'red',
   'Revisit': 'orange',
+  'Location not found': 'gray',
 } as const;
 
 /**
