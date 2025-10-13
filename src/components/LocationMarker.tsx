@@ -510,15 +510,69 @@ export default function LocationMarker({
 
       {/* Notes Textarea */}
       <div className="mb-3">
-        <label
-          htmlFor={`notes-${location.id}`}
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Notes
-          <span className="text-xs text-gray-500 ml-2">
-            ({editedNotes.length}/{VALIDATION.MAX_NOTES_LENGTH})
-          </span>
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label
+            htmlFor={`notes-${location.id}`}
+            className="block text-sm font-medium text-gray-700"
+          >
+            Notes
+            <span className="text-xs text-gray-500 ml-2">
+              ({editedNotes.length}/{VALIDATION.MAX_NOTES_LENGTH})
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              const now = new Date();
+              const dateStr = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${String(now.getFullYear()).slice(-2)}`;
+              const dateStamp = `${dateStr}: `;
+
+              // Find the last newline or start of string
+              const currentNotes = editedNotes.trim();
+              let newNotes = '';
+
+              if (currentNotes === '') {
+                // Empty notes - just add the date stamp
+                newNotes = dateStamp;
+              } else {
+                // Existing notes - add newline and date stamp
+                newNotes = currentNotes + '\n' + dateStamp;
+              }
+
+              setEditedNotes(newNotes);
+
+              // Validate the new notes
+              const validation = validateNotes(newNotes);
+              setNotesError(validation.isValid ? null : validation.error || null);
+
+              // Enable editing mode
+              if (!editState.isEditing) {
+                setEditState((prev) => ({ ...prev, isEditing: true }));
+              }
+
+              // Clear previous messages
+              setEditState((prev) => ({ ...prev, error: null, success: false }));
+            }}
+            disabled={editState.isSaving}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 active:bg-blue-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+            title="Add date stamp"
+          >
+            <svg
+              className="h-3 w-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Add Date
+          </button>
+        </div>
         <textarea
           id={`notes-${location.id}`}
           value={editedNotes}
