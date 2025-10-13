@@ -357,11 +357,20 @@ export default function HomePage(): JSX.Element {
 
       {/* Expandable Legend Panel */}
       {isLegendExpanded && (
-        <div
-          className="absolute top-16 left-4 right-4 z-40 bg-white rounded-lg shadow-lg p-4 sm:max-w-sm sm:right-auto"
-          role="region"
-          aria-label="Map controls"
-        >
+        <>
+          {/* Backdrop - clicking closes the legend panel */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-20 z-35"
+            onClick={() => setIsLegendExpanded(false)}
+            aria-label="Close filters"
+          />
+
+          {/* Legend Panel Content */}
+          <div
+            className="absolute top-16 left-4 right-4 z-40 bg-white rounded-lg shadow-lg p-4 sm:max-w-sm sm:right-auto"
+            role="region"
+            aria-label="Map controls"
+          >
           {/* Follow-up Date Picker */}
           <div className="mb-4 pb-4 border-b border-gray-200">
             <label htmlFor="followUpDate" className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
@@ -408,6 +417,7 @@ export default function HomePage(): JSX.Element {
             </div>
           </div>
         </div>
+        </>
       )}
 
       {/* InfoWindow Overlay */}
