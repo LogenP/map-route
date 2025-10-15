@@ -320,14 +320,17 @@ export function getDirectionsUrl(
 /**
  * Gets the URL to view a location page on Google Maps (not directions)
  * @param placeId - Google Place ID
- * @param lat - Latitude (fallback if no placeId)
- * @param lng - Longitude (fallback if no placeId)
+ * @param lat - Latitude
+ * @param lng - Longitude
  * @returns Google Maps location page URL
  */
 export function getLocationPageUrl(placeId?: string, lat?: number, lng?: number): string {
-  if (placeId) {
-    return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+  // Official Google Maps URL API format requires both query and query_place_id
+  // The query parameter (coordinates) serves as fallback if place_id can't be resolved
+  if (placeId && lat !== undefined && lng !== undefined) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${placeId}`;
   }
+  // Fallback to coordinates only if no place_id
   if (lat !== undefined && lng !== undefined) {
     return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   }
