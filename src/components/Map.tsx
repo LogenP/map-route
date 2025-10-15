@@ -70,6 +70,7 @@ export default function Map({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
 
   // Refs for DOM elements and Google Maps objects
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -472,6 +473,25 @@ export default function Map({
   }, [mapInstance, selectedLocationId, locations, selectedFollowUpDate]);
 
   /**
+   * Update map type when state changes
+   */
+  useEffect(() => {
+    if (!mapInstance) {
+      return;
+    }
+
+    console.log('[Map] Setting map type to:', mapType);
+    mapInstance.setMapTypeId(mapType);
+  }, [mapInstance, mapType]);
+
+  /**
+   * Toggle between roadmap and satellite view
+   */
+  const toggleMapType = (): void => {
+    setMapType((prev) => (prev === 'roadmap' ? 'satellite' : 'roadmap'));
+  };
+
+  /**
    * Render map container (always rendered to ensure ref is attached)
    */
   return (
@@ -536,6 +556,54 @@ export default function Map({
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
           <p className="text-sm text-gray-600">No locations to display</p>
         </div>
+      )}
+
+      {/* Map Type Toggle Button (bottom left) */}
+      {!isLoading && !loadError && mapInstance && (
+        <button
+          onClick={toggleMapType}
+          className="absolute bottom-4 left-4 z-20 min-h-[44px] min-w-[44px] rounded-lg bg-white px-4 py-2 shadow-lg hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center gap-2 touch-manipulation"
+          aria-label={`Switch to ${mapType === 'roadmap' ? 'satellite' : 'roadmap'} view`}
+          title={`Switch to ${mapType === 'roadmap' ? 'satellite' : 'roadmap'} view`}
+        >
+          {mapType === 'roadmap' ? (
+            <>
+              <svg
+                className="h-5 w-5 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="hidden sm:inline text-sm font-medium text-gray-700">Satellite</span>
+            </>
+          ) : (
+            <>
+              <svg
+                className="h-5 w-5 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                />
+              </svg>
+              <span className="hidden sm:inline text-sm font-medium text-gray-700">Map</span>
+            </>
+          )}
+        </button>
       )}
     </div>
   );

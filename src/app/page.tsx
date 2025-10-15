@@ -78,6 +78,11 @@ export default function HomePage(): JSX.Element {
   // Legend visibility state
   const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(false);
 
+  // Status filter state - default: all checked except "Not interested" and "Location not found"
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
+    new Set(ALL_STATUSES.filter(status => status !== 'Not interested' && status !== 'Location not found'))
+  );
+
   /**
    * Fetches locations from the API
    */
@@ -270,6 +275,29 @@ export default function HomePage(): JSX.Element {
   }, []);
 
   /**
+   * Handles status filter toggle
+   */
+  const handleStatusToggle = useCallback((status: string): void => {
+    setSelectedStatuses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(status)) {
+        newSet.delete(status);
+      } else {
+        newSet.add(status);
+      }
+      console.log('[HomePage] Status filter updated:', Array.from(newSet));
+      return newSet;
+    });
+  }, []);
+
+  /**
+   * Filter locations based on selected statuses
+   */
+  const filteredLocations = state.locations.filter(location =>
+    selectedStatuses.has(location.status)
+  );
+
+  /**
    * Render loading state
    */
   if (state.isLoading && state.locations.length === 0) {
@@ -326,7 +354,7 @@ export default function HomePage(): JSX.Element {
     <main className="map-container">
       {/* Map Component */}
       <Map
-        locations={state.locations}
+        locations={filteredLocations}
         onMarkerClick={handleMarkerClick}
         selectedLocationId={state.selectedLocation?.id ?? null}
         userLocation={userLocation}
@@ -394,30 +422,43 @@ export default function HomePage(): JSX.Element {
             </p>
           </div>
 
-          {/* Status Legend */}
+          {/* Status Filters */}
           <div>
             <div className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-              Status Legend
+              Status Filters
             </div>
             <div className="space-y-2">
               {ALL_STATUSES.map((status) => (
-                <div key={status} className="flex items-center gap-2">
+                <label
+                  key={status}
+                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded p-1 -ml-1 min-h-[44px] touch-manipulation"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedStatuses.has(status)}
+                    onChange={() => handleStatusToggle(status)}
+                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    aria-label={`Toggle ${STATUS_LABELS[status]} filter`}
+                  />
                   <div
                     className="w-4 h-4 rounded-full flex-shrink-0 border border-gray-200"
                     style={{ backgroundColor: STATUS_COLORS[status] }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-gray-700">{STATUS_LABELS[status]}</span>
-                </div>
+                  <span className="text-sm text-gray-700 flex-1">{STATUS_LABELS[status]}</span>
+                </label>
               ))}
-              {/* Follow-up Date Match Legend Item */}
+            </div>
+
+            {/* Info about Follow-up Date Match */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="flex items-center gap-2">
                 <div
                   className="w-4 h-4 rounded-full flex-shrink-0 border border-gray-200"
                   style={{ backgroundColor: '#9C27B0' }}
                   aria-hidden="true"
                 />
-                <span className="text-sm text-gray-700">Follow-up Date Match</span>
+                <span className="text-xs text-gray-600">Follow-up Date Match (Purple)</span>
               </div>
             </div>
           </div>
