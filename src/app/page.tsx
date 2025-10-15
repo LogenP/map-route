@@ -160,11 +160,15 @@ export default function HomePage(): JSX.Element {
    * Handles InfoWindow close event
    */
   const handleInfoWindowClose = useCallback((): void => {
-    console.log('[HomePage] InfoWindow closed');
-    setState((prev) => ({
-      ...prev,
-      selectedLocation: null,
-    }));
+    console.log('[HomePage] ===== handleInfoWindowClose called =====');
+    setState((prev) => {
+      console.log('[HomePage] Setting selectedLocation to null');
+      return {
+        ...prev,
+        selectedLocation: null,
+      };
+    });
+    console.log('[HomePage] ===== handleInfoWindowClose completed =====');
   }, []);
 
   /**

@@ -77,6 +77,7 @@ export default function Map({
   const userLocationMarkerRef = useRef<google.maps.Marker | null>(null);
   const isInitializedRef = useRef<boolean>(false);
   const hasSetInitialBoundsRef = useRef<boolean>(false);
+  const previousLocationsRef = useRef<globalThis.Map<number, Location>>(new globalThis.Map());
 
   /**
    * Initialize Google Maps API and create map instance
@@ -173,6 +174,7 @@ export default function Map({
         marker.setMap(null);
       });
       markersRef.current.clear();
+      previousLocationsRef.current.clear();
 
       // Clear user location marker
       if (userLocationMarkerRef.current) {
@@ -189,12 +191,6 @@ export default function Map({
     if (!mapInstance || locations.length === 0) {
       return;
     }
-
-    // Clear existing markers
-    markersRef.current.forEach((marker) => {
-      marker.setMap(null);
-    });
-    markersRef.current.clear();
 
     // Filter locations with valid coordinates
     const validLocations = locations.filter(
@@ -214,16 +210,44 @@ export default function Map({
       return;
     }
 
-    // Create bounds for fitting all markers
+    // Create a set of current location IDs
+    const currentLocationIds = new Set(validLocations.map((loc) => loc.id));
+
+    // Remove markers for locations that no longer exist
+    markersRef.current.forEach((marker, locationId) => {
+      if (!currentLocationIds.has(locationId)) {
+        marker.setMap(null);
+        markersRef.current.delete(locationId);
+        previousLocationsRef.current.delete(locationId);
+      }
+    });
+
+    // Create bounds for fitting all markers (only used on initial load)
     const bounds = new google.maps.LatLngBounds();
 
-    // Create markers for each location
+    // Track which locations were updated
+    let updatedCount = 0;
+    let createdCount = 0;
+
+    // Update or create markers for each location
     validLocations.forEach((location) => {
       try {
         const position: Coordinates = {
           lat: location.lat,
           lng: location.lng,
         };
+
+        // Check if marker already exists
+        const existingMarker = markersRef.current.get(location.id);
+        const previousLocation = previousLocationsRef.current.get(location.id);
+
+        // Determine if this location's relevant data has changed
+        const hasChangedStatus = !previousLocation || previousLocation.status !== location.status;
+        const hasChangedFollowUpDate = !previousLocation || previousLocation.followUpDate !== location.followUpDate;
+        const hasChangedPosition = !previousLocation ||
+          previousLocation.lat !== location.lat ||
+          previousLocation.lng !== location.lng;
+        const hasChangedName = !previousLocation || previousLocation.companyName !== location.companyName;
 
         // Determine marker color based on follow-up date match or status
         const hasFollowUpDateMatch =
@@ -236,38 +260,71 @@ export default function Map({
           ? createMarkerIcon(FOLLOW_UP_DATE_COLOR) // Purple for follow-up date match
           : getMarkerIcon(location.status); // Regular status color
 
-        // Create marker
-        const marker = new google.maps.Marker({
-          position,
-          map: mapInstance,
-          title: location.companyName,
-          icon: {
-            path: markerIconConfig.path,
-            fillColor: markerIconConfig.fillColor,
-            fillOpacity: markerIconConfig.fillOpacity,
-            strokeColor: markerIconConfig.strokeColor,
-            strokeWeight: markerIconConfig.strokeWeight,
-            scale: markerIconConfig.scale,
-            anchor: new google.maps.Point(
-              markerIconConfig.anchor?.x ?? 12,
-              markerIconConfig.anchor?.y ?? 22
-            ),
-          },
-          clickable: true,
-          optimized: true,
-        });
-
-        // Add click listener
-        marker.addListener('click', () => {
-          if (onMarkerClick) {
-            onMarkerClick(location);
+        if (existingMarker) {
+          // Only update marker if relevant data changed
+          if (hasChangedStatus || hasChangedFollowUpDate) {
+            existingMarker.setIcon({
+              path: markerIconConfig.path,
+              fillColor: markerIconConfig.fillColor,
+              fillOpacity: markerIconConfig.fillOpacity,
+              strokeColor: markerIconConfig.strokeColor,
+              strokeWeight: markerIconConfig.strokeWeight,
+              scale: markerIconConfig.scale,
+              anchor: new google.maps.Point(
+                markerIconConfig.anchor?.x ?? 12,
+                markerIconConfig.anchor?.y ?? 22
+              ),
+            });
+            updatedCount++;
           }
-        });
 
-        // Store marker reference
-        markersRef.current.set(location.id, marker);
+          // Update title if company name changed
+          if (hasChangedName) {
+            existingMarker.setTitle(location.companyName);
+          }
 
-        // Extend bounds to include this marker
+          // Update position if coordinates changed
+          if (hasChangedPosition) {
+            existingMarker.setPosition(position);
+          }
+        } else {
+          // Create new marker
+          const marker = new google.maps.Marker({
+            position,
+            map: mapInstance,
+            title: location.companyName,
+            icon: {
+              path: markerIconConfig.path,
+              fillColor: markerIconConfig.fillColor,
+              fillOpacity: markerIconConfig.fillOpacity,
+              strokeColor: markerIconConfig.strokeColor,
+              strokeWeight: markerIconConfig.strokeWeight,
+              scale: markerIconConfig.scale,
+              anchor: new google.maps.Point(
+                markerIconConfig.anchor?.x ?? 12,
+                markerIconConfig.anchor?.y ?? 22
+              ),
+            },
+            clickable: true,
+            optimized: true,
+          });
+
+          // Add click listener
+          marker.addListener('click', () => {
+            if (onMarkerClick) {
+              onMarkerClick(location);
+            }
+          });
+
+          // Store marker reference
+          markersRef.current.set(location.id, marker);
+          createdCount++;
+        }
+
+        // Update previous location reference
+        previousLocationsRef.current.set(location.id, { ...location });
+
+        // Extend bounds to include this marker (for initial load)
         bounds.extend(position);
       } catch (error) {
         console.error(
@@ -303,9 +360,11 @@ export default function Map({
       }
     }
 
-    console.log(
-      `[Map] Created ${markersRef.current.size} markers for ${validLocations.length} locations`
-    );
+    if (createdCount > 0 || updatedCount > 0) {
+      console.log(
+        `[Map] Markers synchronized: ${createdCount} created, ${updatedCount} updated, ${markersRef.current.size} total`
+      );
+    }
   }, [mapInstance, locations, onMarkerClick, selectedFollowUpDate]);
 
   /**

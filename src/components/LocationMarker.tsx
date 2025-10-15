@@ -212,15 +212,21 @@ export default function LocationMarker({
    * Saves changes to the API
    */
   const handleSave = useCallback(async (): Promise<void> => {
+    console.log('[LocationMarker] handleSave called for location:', location.id);
+
     // Don't save if no changes or validation errors
     if (!hasChanges()) {
+      console.log('[LocationMarker] No changes detected, exiting edit mode');
       setEditState((prev) => ({ ...prev, isEditing: false }));
       return;
     }
 
     if (notesError) {
+      console.log('[LocationMarker] Notes validation error, aborting save:', notesError);
       return;
     }
+
+    console.log('[LocationMarker] Starting save process...');
 
     // Set loading state
     setEditState((prev) => ({
@@ -239,73 +245,72 @@ export default function LocationMarker({
     };
     onUpdate(optimisticLocation);
 
-    try {
-      // Call PATCH API
-      const response = await fetch(API_ENDPOINTS.UPDATE_LOCATION(location.id), {
-        method: HTTP_METHODS.PATCH,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: editedStatus,
-          notes: editedNotes.trim(),
-          followUpDate: editedFollowUpDate || undefined,
-        }),
-      });
+    // Close popup immediately after optimistic update
+    console.log('[LocationMarker] Closing popup immediately after optimistic update');
+    onClose();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+    // Continue API call in background
+    (async () => {
+      try {
+        console.log('[LocationMarker] Sending PATCH request to:', API_ENDPOINTS.UPDATE_LOCATION(location.id));
 
-      const data: UpdateLocationResponse | ErrorResponse = await response.json();
+        // Call PATCH API
+        const response = await fetch(API_ENDPOINTS.UPDATE_LOCATION(location.id), {
+          method: HTTP_METHODS.PATCH,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: editedStatus,
+            notes: editedNotes.trim(),
+            followUpDate: editedFollowUpDate || undefined,
+          }),
+        });
 
-      if (!data.success) {
-        // Revert optimistic update on error
+        console.log('[LocationMarker] Response status:', response.status, response.ok);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: UpdateLocationResponse | ErrorResponse = await response.json();
+        console.log('[LocationMarker] Response data:', data);
+
+        if (!data.success) {
+          // Get error message
+          const errorMsg =
+            'error' in data
+              ? data.error
+              : 'Failed to update location. Please try again.';
+
+          console.error('[LocationMarker] Update failed:', data);
+
+          // Show alert to user
+          alert(`Error saving location:\n\n${errorMsg}`);
+
+          // Revert optimistic update and reopen popup
+          onUpdate(location);
+          return;
+        }
+
+        // Success - silently update with server response without reopening popup
+        console.log('[LocationMarker] Successfully updated location:', location.id);
+      } catch (error) {
+        // Get error message
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Network error. Please check your connection.';
+
+        console.error('[LocationMarker] Error updating location:', error);
+
+        // Show alert to user
+        alert(`Error saving location:\n\n${errorMessage}`);
+
+        // Revert optimistic update and reopen popup
         onUpdate(location);
-
-        const errorMsg =
-          'error' in data
-            ? data.error
-            : 'Failed to update location. Please try again.';
-
-        setEditState((prev) => ({
-          ...prev,
-          isSaving: false,
-          error: errorMsg,
-          success: false,
-        }));
-
-        console.error('[LocationMarker] Update failed:', data);
-        return;
       }
-
-      // Success - update with server response
-      if ('location' in data) {
-        onUpdate(data.location);
-      }
-
-      console.log('[LocationMarker] Successfully updated location:', location.id);
-
-      // Close the popup immediately after successful save
-      onClose();
-    } catch (error) {
-      // Revert optimistic update on error
-      onUpdate(location);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Network error. Please check your connection.';
-
-      setEditState((prev) => ({
-        ...prev,
-        isSaving: false,
-        error: errorMessage,
-        success: false,
-      }));
-
-      console.error('[LocationMarker] Error updating location:', error);
-    }
+    })();
   }, [
     hasChanges,
     notesError,
