@@ -24,6 +24,7 @@ import type { GetLocationsResponse, ErrorResponse } from '@/types/api';
 // Internal components
 import Map from '@/components/Map';
 import LocationMarker from '@/components/LocationMarker';
+import FollowUpDropdown from '@/components/FollowUpDropdown';
 
 // Internal constants
 import { API_ENDPOINTS, HTTP_METHODS, ERROR_MESSAGES, STATUS_COLORS, STATUS_LABELS, ALL_STATUSES } from '@/lib/constants';
@@ -361,31 +362,41 @@ export default function HomePage(): JSX.Element {
         selectedFollowUpDate={state.selectedFollowUpDate}
       />
 
-      {/* Collapsible Legend Button */}
-      <button
-        onClick={() => setIsLegendExpanded(!isLegendExpanded)}
-        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow min-h-[44px] touch-manipulation"
-        type="button"
-        aria-label={isLegendExpanded ? 'Close filters' : 'Open filters'}
-        aria-expanded={isLegendExpanded}
-      >
-        <svg
-          className={`h-5 w-5 transition-transform ${isLegendExpanded ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      {/* Top Control Bar */}
+      <div className="absolute top-4 left-4 right-4 z-50 flex flex-wrap items-start gap-2">
+        {/* Follow-up Dropdown */}
+        <FollowUpDropdown
+          locations={state.locations}
+          selectedFollowUpDate={state.selectedFollowUpDate}
+          onLocationClick={handleMarkerClick}
+        />
+
+        {/* Collapsible Legend Button */}
+        <button
+          onClick={() => setIsLegendExpanded(!isLegendExpanded)}
+          className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow min-h-[44px] touch-manipulation"
+          type="button"
+          aria-label={isLegendExpanded ? 'Close filters' : 'Open filters'}
+          aria-expanded={isLegendExpanded}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-        <span className="font-medium text-sm">
-          {isLegendExpanded ? 'Hide Filters' : 'Show Filters'}
-        </span>
-      </button>
+          <svg
+            className={`h-5 w-5 transition-transform ${isLegendExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+          <span className="font-medium text-sm">
+            {isLegendExpanded ? 'Hide Filters' : 'Show Filters'}
+          </span>
+        </button>
+      </div>
 
       {/* Expandable Legend Panel */}
       {isLegendExpanded && (
@@ -399,7 +410,7 @@ export default function HomePage(): JSX.Element {
 
           {/* Legend Panel Content */}
           <div
-            className="absolute top-16 left-4 z-40 bg-white rounded-lg shadow-lg p-3 max-w-[calc(100vw-2rem)] w-80 overflow-hidden"
+            className="absolute top-20 left-4 z-40 bg-white rounded-lg shadow-lg p-3 max-w-[calc(100vw-2rem)] w-80 overflow-hidden"
             role="region"
             aria-label="Map controls"
           >

@@ -464,10 +464,16 @@ export default function Map({
       // Set high z-index for selected marker
       selectedMarker.setZIndex(1000);
 
-      // Pan to selected marker
+      // Pan to selected marker and zoom in
       const position = selectedMarker.getPosition();
       if (position) {
         mapInstance.panTo(position);
+
+        // Zoom in to a reasonable level to focus on the selected location
+        const currentZoom = mapInstance.getZoom();
+        if (!currentZoom || currentZoom < 16) {
+          mapInstance.setZoom(16);
+        }
       }
     }
   }, [mapInstance, selectedLocationId, locations, selectedFollowUpDate]);
