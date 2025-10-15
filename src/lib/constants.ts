@@ -277,13 +277,13 @@ export function isMobileDevice(userAgent: string): boolean {
  * Platform detection for "Get Directions" functionality
  */
 export const DIRECTIONS_CONFIG = {
-  /** Google Maps URL with place_id (works on web and opens in app on mobile) */
-  GOOGLE_MAPS_PLACE: (placeId: string) =>
-    `https://www.google.com/maps/dir/?api=1&destination=place_id:${placeId}`,
+  /** Google Maps URL with place_id and coordinates (official format from Google Maps URL API) */
+  GOOGLE_MAPS_PLACE: (placeId: string, lat: number, lng: number) =>
+    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${placeId}`,
   /** Apple Maps URL scheme with search query (iOS fallback) */
   APPLE_MAPS_SEARCH: (name: string, address: string) =>
     `maps://maps.apple.com/?q=${encodeURIComponent(`${name}, ${address}`)}`,
-  /** Google Maps URL with coordinates (fallback) */
+  /** Google Maps URL with coordinates only (fallback when no place_id) */
   GOOGLE_MAPS_COORDS: (lat: number, lng: number) =>
     `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
 } as const;
@@ -306,13 +306,14 @@ export function getDirectionsUrl(
   _userAgent: string,
   placeId?: string
 ): string {
-  // Use Google Maps web URL with place_id if available (works on all platforms and opens in app on mobile)
-  // This format properly handles place_id on mobile devices
+  // Use Google Maps URL with both coordinates and place_id
+  // According to Google Maps URL API docs, you need both destination and destination_place_id
+  // The place_id takes priority but coordinates serve as fallback
   if (placeId) {
-    return DIRECTIONS_CONFIG.GOOGLE_MAPS_PLACE(placeId);
+    return DIRECTIONS_CONFIG.GOOGLE_MAPS_PLACE(placeId, lat, lng);
   }
 
-  // Fallback to coordinates if no place_id
+  // Fallback to coordinates only if no place_id
   return DIRECTIONS_CONFIG.GOOGLE_MAPS_COORDS(lat, lng);
 }
 
