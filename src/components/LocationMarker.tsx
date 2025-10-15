@@ -400,11 +400,11 @@ export default function LocationMarker({
   return (
     <div
       className="min-w-[280px] max-w-[320px] bg-white rounded-lg shadow-lg overflow-hidden"
-      style={{ maxWidth: '90vw' }}
+      style={{ maxWidth: '90vw', maxHeight: '85vh', overflowY: 'auto' }}
     >
       {/* Photo at the top (if available) */}
       {location.photo && (
-        <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+        <div className="w-full h-32 md:h-48 bg-gray-100 relative overflow-hidden">
           {/* Skeleton loader while image loads */}
           {photoLoadState === 'loading' && (
             <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
@@ -415,7 +415,7 @@ export default function LocationMarker({
             <img
               src={location.photo}
               alt={location.companyName}
-              className={`w-full h-48 object-cover ${photoLoadState === 'loading' ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+              className={`w-full h-32 md:h-48 object-cover ${photoLoadState === 'loading' ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
               onLoad={() => {
                 setPhotoLoadState('loaded');
               }}
@@ -428,14 +428,14 @@ export default function LocationMarker({
         </div>
       )}
 
-      <div className="p-4">
+      <div className="p-3 md:p-4">
         {/* Header with company name */}
-        <div className="flex items-start justify-between mb-3 border-b border-gray-200 pb-2">
+        <div className="flex items-start justify-between mb-2 md:mb-3 border-b border-gray-200 pb-2">
           <a
             href={getLocationPageUrl(location.placeId, location.lat, location.lng)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-lg font-semibold text-blue-600 hover:text-blue-800 underline leading-tight flex-1 pr-2 transition-colors"
+            className="text-base md:text-lg font-semibold text-blue-600 hover:text-blue-800 underline leading-tight flex-1 pr-2 transition-colors"
           >
             {location.companyName}
           </a>
@@ -462,12 +462,12 @@ export default function LocationMarker({
         </div>
 
       {/* Address */}
-      <div className="mb-3">
-        <p className="text-sm text-gray-600 leading-relaxed">{location.address}</p>
+      <div className="mb-2 md:mb-3">
+        <p className="text-xs md:text-sm text-gray-600 leading-relaxed">{location.address}</p>
       </div>
 
       {/* Status Dropdown */}
-      <div className="mb-3">
+      <div className="mb-2 md:mb-3">
         <label
           htmlFor={`status-${location.id}`}
           className="block text-sm font-medium text-gray-700 mb-1"
@@ -493,7 +493,7 @@ export default function LocationMarker({
       </div>
 
       {/* Follow-up Date Input */}
-      <div className="mb-3">
+      <div className="mb-2 md:mb-3">
         <label
           htmlFor={`followUpDate-${location.id}`}
           className="block text-sm font-medium text-gray-700 mb-1"
@@ -547,7 +547,7 @@ export default function LocationMarker({
       </div>
 
       {/* Notes Textarea */}
-      <div className="mb-3">
+      <div className="mb-2 md:mb-3">
         <div className="flex items-center justify-between mb-1">
           <label
             htmlFor={`notes-${location.id}`}
@@ -617,7 +617,7 @@ export default function LocationMarker({
           onChange={handleNotesChange}
           disabled={editState.isSaving}
           placeholder="Add notes about this location..."
-          rows={4}
+          rows={3}
           className={`w-full px-3 py-2 text-base border ${
             notesError ? 'border-red-500' : 'border-gray-300'
           } rounded-md focus:outline-none focus:ring-2 ${
@@ -637,20 +637,20 @@ export default function LocationMarker({
       {/* Error Message */}
       {editState.error && (
         <div
-          className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md"
+          className="mb-2 md:mb-3 p-2 md:p-3 bg-red-50 border border-red-200 rounded-md"
           role="alert"
         >
-          <p className="text-sm text-red-800">{editState.error}</p>
+          <p className="text-xs md:text-sm text-red-800">{editState.error}</p>
         </div>
       )}
 
       {/* Success Message */}
       {editState.success && (
         <div
-          className="mb-3 p-3 bg-green-50 border border-green-200 rounded-md"
+          className="mb-2 md:mb-3 p-2 md:p-3 bg-green-50 border border-green-200 rounded-md"
           role="status"
         >
-          <p className="text-sm text-green-800">Location updated successfully!</p>
+          <p className="text-xs md:text-sm text-green-800">Location updated successfully!</p>
         </div>
       )}
 

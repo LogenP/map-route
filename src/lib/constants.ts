@@ -277,20 +277,14 @@ export function isMobileDevice(userAgent: string): boolean {
  * Platform detection for "Get Directions" functionality
  */
 export const DIRECTIONS_CONFIG = {
-  /** Google Maps app URL with place_id (iOS/Android) */
-  GOOGLE_MAPS_APP_PLACE: (placeId: string) =>
-    `comgooglemaps://?q=place_id:${placeId}`,
+  /** Google Maps URL with place_id (works on web and opens in app on mobile) */
+  GOOGLE_MAPS_PLACE: (placeId: string) =>
+    `https://www.google.com/maps/dir/?api=1&destination=place_id:${placeId}`,
   /** Apple Maps URL scheme with search query (iOS fallback) */
   APPLE_MAPS_SEARCH: (name: string, address: string) =>
     `maps://maps.apple.com/?q=${encodeURIComponent(`${name}, ${address}`)}`,
-  /** Google Maps app URL with coordinates (Android fallback) */
-  GOOGLE_MAPS_APP_COORDS: (lat: number, lng: number) =>
-    `google.navigation:q=${lat},${lng}`,
-  /** Web Google Maps URL with place_id */
-  WEB_MAPS_PLACE: (placeId: string) =>
-    `https://www.google.com/maps/place/?q=place_id:${placeId}`,
-  /** Web Google Maps URL with coordinates (fallback) */
-  WEB_MAPS_COORDS: (lat: number, lng: number) =>
+  /** Google Maps URL with coordinates (fallback) */
+  GOOGLE_MAPS_COORDS: (lat: number, lng: number) =>
     `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
 } as const;
 
@@ -298,44 +292,28 @@ export const DIRECTIONS_CONFIG = {
  * Gets the appropriate directions URL based on the platform and available data
  * @param lat - Latitude
  * @param lng - Longitude
- * @param name - Location name
- * @param address - Location address
- * @param userAgent - User agent string
+ * @param _name - Location name (unused but kept for backwards compatibility)
+ * @param _address - Location address (unused but kept for backwards compatibility)
+ * @param _userAgent - User agent string (unused but kept for backwards compatibility)
  * @param placeId - Optional Google Place ID
  * @returns Directions URL
  */
 export function getDirectionsUrl(
   lat: number,
   lng: number,
-  name: string,
-  address: string,
-  userAgent: string,
+  _name: string,
+  _address: string,
+  _userAgent: string,
   placeId?: string
 ): string {
-  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-  const isAndroid = /Android/i.test(userAgent);
-
-  // iOS: Try Google Maps with place_id, fallback to Apple Maps with search
-  if (isIOS) {
-    if (placeId) {
-      return DIRECTIONS_CONFIG.GOOGLE_MAPS_APP_PLACE(placeId);
-    }
-    return DIRECTIONS_CONFIG.APPLE_MAPS_SEARCH(name, address);
-  }
-
-  // Android: Use Google Maps with place_id or coordinates
-  if (isAndroid) {
-    if (placeId) {
-      return DIRECTIONS_CONFIG.GOOGLE_MAPS_APP_PLACE(placeId);
-    }
-    return DIRECTIONS_CONFIG.GOOGLE_MAPS_APP_COORDS(lat, lng);
-  }
-
-  // Web: Use place_id if available, otherwise coordinates
+  // Use Google Maps web URL with place_id if available (works on all platforms and opens in app on mobile)
+  // This format properly handles place_id on mobile devices
   if (placeId) {
-    return DIRECTIONS_CONFIG.WEB_MAPS_PLACE(placeId);
+    return DIRECTIONS_CONFIG.GOOGLE_MAPS_PLACE(placeId);
   }
-  return DIRECTIONS_CONFIG.WEB_MAPS_COORDS(lat, lng);
+
+  // Fallback to coordinates if no place_id
+  return DIRECTIONS_CONFIG.GOOGLE_MAPS_COORDS(lat, lng);
 }
 
 /**
