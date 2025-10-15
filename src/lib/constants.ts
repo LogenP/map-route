@@ -277,9 +277,9 @@ export function isMobileDevice(userAgent: string): boolean {
  * Platform detection for "Get Directions" functionality
  */
 export const DIRECTIONS_CONFIG = {
-  /** Google Maps URL with place_id and coordinates (official format from Google Maps URL API) */
-  GOOGLE_MAPS_PLACE: (placeId: string, lat: number, lng: number) =>
-    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${placeId}`,
+  /** Google Maps URL with place_id and address (official format - address is required as fallback) */
+  GOOGLE_MAPS_PLACE: (placeId: string, address: string) =>
+    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&destination_place_id=${placeId}`,
   /** Apple Maps URL scheme with search query (iOS fallback) */
   APPLE_MAPS_SEARCH: (name: string, address: string) =>
     `maps://maps.apple.com/?q=${encodeURIComponent(`${name}, ${address}`)}`,
@@ -293,7 +293,7 @@ export const DIRECTIONS_CONFIG = {
  * @param lat - Latitude
  * @param lng - Longitude
  * @param _name - Location name (unused but kept for backwards compatibility)
- * @param _address - Location address (unused but kept for backwards compatibility)
+ * @param address - Location address
  * @param _userAgent - User agent string (unused but kept for backwards compatibility)
  * @param placeId - Optional Google Place ID
  * @returns Directions URL
@@ -302,15 +302,15 @@ export function getDirectionsUrl(
   lat: number,
   lng: number,
   _name: string,
-  _address: string,
+  address: string,
   _userAgent: string,
   placeId?: string
 ): string {
-  // Use Google Maps URL with both coordinates and place_id
-  // According to Google Maps URL API docs, you need both destination and destination_place_id
-  // The place_id takes priority but coordinates serve as fallback
+  // Use Google Maps URL with both address and place_id
+  // According to Google Maps URL API docs, the destination address is REQUIRED as fallback
+  // The place_id takes priority but the address is used if place_id can't be resolved (especially on mobile)
   if (placeId) {
-    return DIRECTIONS_CONFIG.GOOGLE_MAPS_PLACE(placeId, lat, lng);
+    return DIRECTIONS_CONFIG.GOOGLE_MAPS_PLACE(placeId, address);
   }
 
   // Fallback to coordinates only if no place_id
