@@ -348,8 +348,8 @@ body {
 /* Floating action button (FAB) */
 .btn-fab {
   position: absolute;
-  top: var(--spacing-xl);
-  right: var(--spacing-xl);
+  top: var(--spacing-md);
+  right: var(--spacing-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -380,8 +380,8 @@ body {
 /* My Location button (bottom-right) */
 .btn-location {
   position: absolute;
-  bottom: var(--spacing-xl);
-  right: var(--spacing-xl);
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -574,13 +574,13 @@ select:focus-visible {
   }
 
   .btn-fab {
-    top: calc(var(--spacing-xl) + env(safe-area-inset-top));
-    right: calc(var(--spacing-xl) + env(safe-area-inset-right));
+    top: calc(var(--spacing-md) + env(safe-area-inset-top));
+    right: calc(var(--spacing-md) + env(safe-area-inset-right));
   }
 
   .btn-location {
-    bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
-    right: calc(var(--spacing-xl) + env(safe-area-inset-right));
+    bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+    right: calc(var(--spacing-md) + env(safe-area-inset-right));
   }
 }
 
