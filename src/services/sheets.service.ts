@@ -85,10 +85,10 @@ async function initializeSheetsClient(): Promise<void> {
  * Gets the range string for reading all data rows from the sheet.
  * Assumes first row is headers, starts reading from row 2.
  *
- * @returns Range string in A1 notation (e.g., "Sheet1!A2:G")
+ * @returns Range string in A1 notation (e.g., "Sheet1!A2:I")
  */
 function getDataRange(): string {
-  return `${config.googleSheets.sheetName}!A2:G`;
+  return `${config.googleSheets.sheetName}!A2:I`;
 }
 
 /**
@@ -96,10 +96,10 @@ function getDataRange(): string {
  * Row numbers are 1-indexed (row 1 = headers, row 2 = first data row).
  *
  * @param rowNumber - Row number (1-indexed, matching Google Sheets)
- * @returns Range string in A1 notation (e.g., "Sheet1!A5:G5")
+ * @returns Range string in A1 notation (e.g., "Sheet1!A5:I5")
  */
 function getRowRange(rowNumber: number): string {
-  return `${config.googleSheets.sheetName}!A${rowNumber}:G${rowNumber}`;
+  return `${config.googleSheets.sheetName}!A${rowNumber}:I${rowNumber}`;
 }
 
 /**
@@ -205,6 +205,8 @@ function parseSheetRow(row: unknown[], rowIndex: number): Location | null {
     const latStr = values[SHEET_COLUMNS.LATITUDE] || '';
     const lngStr = values[SHEET_COLUMNS.LONGITUDE] || '';
     const followUpDate = values[SHEET_COLUMNS.FOLLOW_UP_DATE] || '';
+    const placeId = values[SHEET_COLUMNS.PLACE_ID] || '';
+    const photo = values[SHEET_COLUMNS.PHOTO] || '';
 
     // Validate required fields
     if (!companyName.trim() || !address.trim()) {
@@ -256,6 +258,8 @@ function parseSheetRow(row: unknown[], rowIndex: number): Location | null {
       lat: lat ?? 0, // Use 0 as placeholder for missing coordinates
       lng: lng ?? 0,
       followUpDate: convertedFollowUpDate,
+      placeId: placeId.trim() || undefined, // Only include if present
+      photo: photo.trim() || undefined, // Only include if present
     };
   } catch (error) {
     console.error(`Error parsing row ${rowIndex + 2}:`, error);

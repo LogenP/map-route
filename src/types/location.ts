@@ -63,6 +63,8 @@ export const STATUS_COLORS: Record<LocationStatus, MarkerColor> = {
  * @property lat - Latitude coordinate (WGS84 decimal degrees)
  * @property lng - Longitude coordinate (WGS84 decimal degrees)
  * @property followUpDate - Optional follow-up date in YYYY-MM-DD format
+ * @property placeId - Optional Google Places API identifier for the business
+ * @property photo - Optional photo URL for the business
  */
 export interface Location {
   /** Sheet row number (1-indexed) */
@@ -81,6 +83,10 @@ export interface Location {
   lng: number;
   /** Follow-up date in YYYY-MM-DD format */
   followUpDate?: string;
+  /** Google Places API identifier (e.g., ChIJ...) for direct business links */
+  placeId?: string;
+  /** Photo URL from Google (e.g., https://lh3.googleusercontent.com/...) */
+  photo?: string;
 }
 
 /**

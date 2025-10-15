@@ -24,6 +24,7 @@ import type { UpdateLocationResponse, ErrorResponse } from '@/types/api';
 import { LOCATION_STATUSES } from '@/types/location';
 import {
   getDirectionsUrl,
+  getLocationPageUrl,
   VALIDATION,
   API_ENDPOINTS,
   HTTP_METHODS,
@@ -108,6 +109,9 @@ export default function LocationMarker({
   // Validation state
   const [notesError, setNotesError] = useState<string | null>(null);
 
+  // Photo loading state
+  const [photoLoadState, setPhotoLoadState] = useState<'loading' | 'loaded' | 'error'>('loading');
+
   // Sync local state when location prop changes
   useEffect(() => {
     setEditedStatus(location.status);
@@ -121,6 +125,8 @@ export default function LocationMarker({
       success: false,
     });
     setNotesError(null);
+    // Reset photo loading state when location changes
+    setPhotoLoadState('loading');
   }, [location.id, location.status, location.notes, location.followUpDate]);
 
   /**
@@ -347,12 +353,14 @@ export default function LocationMarker({
       location.lat,
       location.lng,
       location.companyName,
-      userAgent
+      location.address,
+      userAgent,
+      location.placeId
     );
 
     // Open in new window/tab or native app
     window.open(url, '_blank');
-  }, [location.lat, location.lng, location.companyName]);
+  }, [location.lat, location.lng, location.companyName, location.address, location.placeId]);
 
   /**
    * Handles InfoWindow close
@@ -391,35 +399,67 @@ export default function LocationMarker({
 
   return (
     <div
-      className="min-w-[280px] max-w-[320px] p-4 bg-white rounded-lg shadow-lg"
+      className="min-w-[280px] max-w-[320px] bg-white rounded-lg shadow-lg overflow-hidden"
       style={{ maxWidth: '90vw' }}
     >
-      {/* Header with company name */}
-      <div className="flex items-start justify-between mb-3 border-b border-gray-200 pb-2">
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight flex-1 pr-2">
-          {location.companyName}
-        </h3>
-        <button
-          type="button"
-          onClick={handleClose}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2 -mt-2"
-          aria-label="Close"
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
+      {/* Photo at the top (if available) */}
+      {location.photo && (
+        <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+          {/* Skeleton loader while image loads */}
+          {photoLoadState === 'loading' && (
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
+          )}
+
+          {/* Actual image */}
+          {photoLoadState !== 'error' && (
+            <img
+              src={location.photo}
+              alt={location.companyName}
+              className={`w-full h-48 object-cover ${photoLoadState === 'loading' ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+              onLoad={() => {
+                setPhotoLoadState('loaded');
+              }}
+              onError={() => {
+                console.warn(`[LocationMarker] Failed to load photo for ${location.companyName}:`, location.photo);
+                setPhotoLoadState('error');
+              }}
             />
-          </svg>
-        </button>
-      </div>
+          )}
+        </div>
+      )}
+
+      <div className="p-4">
+        {/* Header with company name */}
+        <div className="flex items-start justify-between mb-3 border-b border-gray-200 pb-2">
+          <a
+            href={getLocationPageUrl(location.placeId, location.lat, location.lng)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-lg font-semibold text-blue-600 hover:text-blue-800 underline leading-tight flex-1 pr-2 transition-colors"
+          >
+            {location.companyName}
+          </a>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2 -mt-2"
+            aria-label="Close"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
 
       {/* Address */}
       <div className="mb-3">
@@ -686,6 +726,7 @@ export default function LocationMarker({
           </svg>
           <span>Get Directions</span>
         </button>
+      </div>
       </div>
     </div>
   );
