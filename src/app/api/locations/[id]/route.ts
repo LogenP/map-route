@@ -209,7 +209,7 @@ export async function PATCH(
     try {
       // Cast body to proper type after validation
       const updateData: Partial<Pick<Location, 'status' | 'notes' | 'followUpDate'>> = {
-        ...(body.status && { status: body.status as Location['status'] }),
+        ...(body.status !== undefined && { status: body.status as Location['status'] }),
         ...(body.notes !== undefined && { notes: body.notes }),
         ...(body.followUpDate !== undefined && { followUpDate: body.followUpDate || undefined }),
       };

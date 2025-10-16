@@ -262,6 +262,10 @@ export default function Map({
           : getMarkerIcon(location.status); // Regular status color
 
         if (existingMarker) {
+          // Check if any data has changed (including notes)
+          const hasChangedNotes = !previousLocation || previousLocation.notes !== location.notes;
+          const hasAnyChange = hasChangedStatus || hasChangedFollowUpDate || hasChangedName || hasChangedPosition || hasChangedNotes;
+
           // Only update marker if relevant data changed
           if (hasChangedStatus || hasChangedFollowUpDate) {
             existingMarker.setIcon({
@@ -287,6 +291,17 @@ export default function Map({
           // Update position if coordinates changed
           if (hasChangedPosition) {
             existingMarker.setPosition(position);
+          }
+
+          // Update click listener if ANY data has changed (including notes)
+          // This ensures the click listener has the latest location data
+          if (hasAnyChange) {
+            google.maps.event.clearListeners(existingMarker, 'click');
+            existingMarker.addListener('click', () => {
+              if (onMarkerClick) {
+                onMarkerClick(location);
+              }
+            });
           }
         } else {
           // Create new marker
