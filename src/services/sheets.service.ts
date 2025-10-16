@@ -387,7 +387,7 @@ export async function updateLocation(
       // Validate status
       if (!isValidStatus(updates.status)) {
         throw new Error(
-          `Invalid status value: ${updates.status}. Must be one of: Prospect, Customer, Follow-up, Not interested, Revisit, Possibility`
+          `Invalid status value: ${updates.status}. Must be one of: Prospect, Customer, Follow-up, Not interested, Revisit, Not applicable, Location not found`
         );
       }
 

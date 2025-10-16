@@ -36,7 +36,7 @@ function validateUpdateRequest(body: UpdateLocationRequest): string | null {
     }
 
     if (!isValidStatus(body.status)) {
-      return `Invalid status value. Must be one of: Prospect, Customer, Follow-up, Not interested, Revisit`;
+      return `Invalid status value. Must be one of: Prospect, Customer, Follow-up, Not interested, Revisit, Not applicable, Location not found`;
     }
   }
 
