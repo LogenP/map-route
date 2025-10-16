@@ -360,13 +360,15 @@ export default function HomePage(): JSX.Element {
       />
 
       {/* Top Control Bar */}
-      <div className="absolute top-4 left-4 right-4 z-50 flex flex-wrap items-start gap-2">
+      <div className="absolute top-4 left-4 right-4 z-50 flex flex-wrap items-start gap-2" style={{ pointerEvents: 'none' }}>
         {/* Follow-up Dropdown */}
-        <FollowUpDropdown
-          locations={state.locations}
-          selectedFollowUpDate={state.selectedFollowUpDate}
-          onLocationClick={handleMarkerClick}
-        />
+        <div style={{ pointerEvents: 'auto' }}>
+          <FollowUpDropdown
+            locations={state.locations}
+            selectedFollowUpDate={state.selectedFollowUpDate}
+            onLocationClick={handleMarkerClick}
+          />
+        </div>
 
         {/* Collapsible Legend Button */}
         <button
@@ -375,6 +377,7 @@ export default function HomePage(): JSX.Element {
           type="button"
           aria-label={isLegendExpanded ? 'Close filters' : 'Open filters'}
           aria-expanded={isLegendExpanded}
+          style={{ pointerEvents: 'auto' }}
         >
           <svg
             className={`h-5 w-5 transition-transform ${isLegendExpanded ? 'rotate-180' : ''}`}
