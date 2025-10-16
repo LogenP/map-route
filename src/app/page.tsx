@@ -41,8 +41,6 @@ interface AppState {
   isLoading: boolean;
   /** Error message if data fetch fails */
   error: string | null;
-  /** Refresh counter for manual refresh */
-  refreshCounter: number;
   /** Selected follow-up date filter (YYYY-MM-DD format) */
   selectedFollowUpDate: string;
 }
@@ -68,9 +66,11 @@ export default function HomePage(): JSX.Element {
     selectedLocation: null,
     isLoading: true,
     error: null,
-    refreshCounter: 0,
     selectedFollowUpDate: getTodayDate(),
   });
+
+  // Refresh counter state (separate for useEffect dependency tracking)
+  const [refreshCounter, setRefreshCounter] = useState<number>(0);
 
   // User location state
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -149,7 +149,7 @@ export default function HomePage(): JSX.Element {
    */
   useEffect(() => {
     fetchLocations();
-  }, [fetchLocations, state.refreshCounter]);
+  }, [fetchLocations, refreshCounter]);
 
   /**
    * Handles marker click event
@@ -199,10 +199,7 @@ export default function HomePage(): JSX.Element {
    */
   const handleRefresh = useCallback((): void => {
     console.log('[HomePage] Manual refresh triggered');
-    setState((prev) => ({
-      ...prev,
-      refreshCounter: prev.refreshCounter + 1,
-    }));
+    setRefreshCounter((prev) => prev + 1);
   }, []);
 
   /**
