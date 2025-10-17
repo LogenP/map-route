@@ -79,9 +79,9 @@ export default function HomePage(): JSX.Element {
   // Legend visibility state
   const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(false);
 
-  // Status filter state - default: all checked except "Not interested" and "Location not found"
+  // Status filter state - default: all checked except "Not interested", "Location not found", and "Not applicable"
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
-    new Set(ALL_STATUSES.filter(status => status !== 'Not interested' && status !== 'Location not found'))
+    new Set(ALL_STATUSES.filter(status => status !== 'Not interested' && status !== 'Location not found' && status !== 'Not applicable'))
   );
 
   /**
