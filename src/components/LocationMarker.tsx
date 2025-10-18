@@ -42,6 +42,8 @@ interface LocationMarkerProps {
   onClose: () => void;
   /** Callback when location data is updated */
   onUpdate: (updated: Location) => void;
+  /** Whether this location was pushed by another user */
+  isPushed?: boolean;
 }
 
 /**
@@ -90,6 +92,7 @@ export default function LocationMarker({
   isOpen,
   onClose,
   onUpdate,
+  isPushed = false,
 }: LocationMarkerProps): JSX.Element | null {
   // Local state for edited values
   const [editedStatus, setEditedStatus] = useState<LocationStatus>(location.status);
@@ -111,6 +114,10 @@ export default function LocationMarker({
 
   // Photo loading state
   const [photoLoadState, setPhotoLoadState] = useState<'loading' | 'loaded' | 'error'>('loading');
+
+  // Push location state
+  const [isPushing, setIsPushing] = useState<boolean>(false);
+  const [showPushedNotification, setShowPushedNotification] = useState<boolean>(false);
 
   // Sync local state when location prop changes
   useEffect(() => {
@@ -363,6 +370,52 @@ export default function LocationMarker({
   }, [location.lat, location.lng, location.companyName, location.address, location.placeId]);
 
   /**
+   * Pushes this location to all other viewers
+   */
+  const handlePushLocation = useCallback(async (): Promise<void> => {
+    setIsPushing(true);
+
+    try {
+      const response = await fetch('/api/push-location', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          locationId: location.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to push location');
+      }
+
+      console.log('[LocationMarker] Location pushed successfully:', location.id);
+
+      // Show success notification
+      setShowPushedNotification(true);
+
+      // Auto-hide after 2 seconds
+      setTimeout(() => {
+        setShowPushedNotification(false);
+      }, 2000);
+    } catch (error) {
+      console.error('[LocationMarker] Error pushing location:', error);
+      alert(
+        `Error pushing location:\n\n${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setIsPushing(false);
+    }
+  }, [location.id]);
+
+  /**
    * Handles InfoWindow close
    */
   const handleClose = useCallback((): void => {
@@ -398,10 +451,53 @@ export default function LocationMarker({
   }
 
   return (
-    <div
-      className="min-w-[280px] max-w-[320px] bg-white rounded-lg shadow-lg overflow-hidden"
-      style={{ maxWidth: '90vw', maxHeight: '85vh', overflowY: 'auto' }}
-    >
+    <>
+      {/* "Pushed" Success Notification - Fixed position above everything */}
+      {showPushedNotification && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] transition-opacity duration-300">
+          <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-2">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span className="font-medium">Pushed</span>
+          </div>
+        </div>
+      )}
+
+      <div
+        className="min-w-[280px] max-w-[320px] bg-white rounded-lg shadow-lg overflow-hidden"
+        style={{ maxWidth: '90vw', maxHeight: '85vh', overflowY: 'auto' }}
+      >
+        {/* Pushed Location Banner */}
+        {isPushed && (
+          <div className="bg-purple-600 text-white px-3 py-2 flex items-center gap-2 animate-pulse">
+            <svg
+              className="h-5 w-5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+            <span className="text-sm font-medium">!קובי תתעורר</span>
+          </div>
+        )}
+
       {/* Photo at the top (if available) */}
       {location.photo && (
         <div className="w-full h-32 md:h-48 bg-gray-100 relative overflow-hidden">
@@ -726,8 +822,60 @@ export default function LocationMarker({
           </svg>
           <span>Get Directions</span>
         </button>
+
+        {/* Push Location Button - Share with other viewers */}
+        <button
+          type="button"
+          onClick={handlePushLocation}
+          disabled={editState.isSaving || isPushing}
+          className="w-full min-h-[44px] px-4 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 active:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2 touch-manipulation"
+        >
+          {isPushing ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span>Pushing...</span>
+            </>
+          ) : (
+            <>
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              <span>Push to Others</span>
+            </>
+          )}
+        </button>
       </div>
       </div>
     </div>
+    </>
   );
 }

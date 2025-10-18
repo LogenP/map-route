@@ -27,6 +27,7 @@ vercel               # Deploy to Vercel (requires Vercel CLI)
 ### Data Flow Pattern
 1. **Loading Locations**: App → GET /api/locations → sheets.service → Google Sheets API → geocoding.service (for missing coords) → Update sheet → Return locations → Render markers
 2. **Updating Location**: User edits → PATCH /api/locations/[id] → sheets.service → Google Sheets API → Return updated location → Update UI
+3. **Pushing Location**: User clicks "Push to Others" → POST /api/push-location → Pusher API → Real-time broadcast → All connected clients → Auto-open InfoWindow
 
 ### Key Architectural Decisions
 
@@ -42,6 +43,8 @@ vercel               # Deploy to Vercel (requires Vercel CLI)
 **Client-Side Map Rendering**: Map component uses `@googlemaps/js-api-loader` with custom SVG markers colored by status. Markers are re-created (not updated) when location data changes.
 
 **Sheet Row = Location ID**: Each location's `id` is its row number in Google Sheets (1-indexed, where row 1 is headers). This means row 2 = location id 2.
+
+**Real-Time Push Notifications**: Uses Pusher Channels for instant location sharing between users. When one user clicks "Push to Others", all connected clients receive a real-time event that automatically opens the InfoWindow for that location. This enables seamless collaboration without database persistence.
 
 ## Google Sheets Integration
 
@@ -172,16 +175,23 @@ All API errors return:
 - `GOOGLE_PRIVATE_KEY` - Service account private key (with newlines)
 - `SHEET_ID` - Google Sheet ID from URL
 - `SHEET_NAME` - Tab name (default: "Sheet1")
+- `PUSHER_APP_ID` - Pusher application ID for real-time push notifications
+- `PUSHER_SECRET` - Pusher application secret key
 
 ### Required (Client-Side)
 - `NEXT_PUBLIC_MAPS_API_KEY` - Google Maps JavaScript API key
+- `NEXT_PUBLIC_PUSHER_KEY` - Pusher application key (public)
+- `NEXT_PUBLIC_PUSHER_CLUSTER` - Pusher cluster (e.g., "us2", "eu", "ap1")
 
 ### Optional
 - `NEXT_PUBLIC_DEFAULT_MAP_CENTER` - Format: "lat,lng" (default: NYC)
 - `NEXT_PUBLIC_DEFAULT_MAP_ZOOM` - Number 1-20 (default: 10)
 - `DEBUG_MODE` - Enable verbose logging
 
-**Important**: Service account must have Editor access to the Google Sheet. API key must have Maps JavaScript API and Geocoding API enabled.
+**Important**:
+- Service account must have Editor access to the Google Sheet
+- API key must have Maps JavaScript API and Geocoding API enabled
+- Pusher credentials can be obtained from [pusher.com/channels](https://pusher.com/channels) (free tier available)
 
 ## Common Development Tasks
 

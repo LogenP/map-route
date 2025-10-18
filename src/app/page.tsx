@@ -29,6 +29,10 @@ import FollowUpDropdown from '@/components/FollowUpDropdown';
 // Internal constants
 import { API_ENDPOINTS, HTTP_METHODS, ERROR_MESSAGES, STATUS_COLORS, STATUS_LABELS, ALL_STATUSES } from '@/lib/constants';
 
+// Pusher client and types
+import { getPusherClient } from '@/lib/pusher.client';
+import { PUSHER_CHANNELS, PUSHER_EVENTS, PushLocationEvent } from '@/types/pusher';
+
 /**
  * Application state interface
  */
@@ -83,6 +87,9 @@ export default function HomePage(): JSX.Element {
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
     new Set(ALL_STATUSES.filter(status => status !== 'Not interested' && status !== 'Location not found' && status !== 'Not applicable'))
   );
+
+  // Pushed location state - tracks which location was pushed and when
+  const [pushedLocationId, setPushedLocationId] = useState<number | null>(null);
 
   /**
    * Fetches locations from the API
@@ -150,6 +157,65 @@ export default function HomePage(): JSX.Element {
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations, refreshCounter]);
+
+  /**
+   * Set up Pusher real-time listener for location push events
+   */
+  useEffect(() => {
+    let pusher: ReturnType<typeof getPusherClient> | null = null;
+
+    try {
+      // Initialize Pusher client
+      pusher = getPusherClient();
+
+      // Subscribe to locations channel
+      const channel = pusher.subscribe(PUSHER_CHANNELS.LOCATIONS);
+
+      // Listen for location-pushed events
+      channel.bind(PUSHER_EVENTS.LOCATION_PUSHED, (data: PushLocationEvent) => {
+        console.log('[HomePage] Received push event:', data);
+
+        // Find the location in our current state
+        setState((prev) => {
+          const location = prev.locations.find((loc) => loc.id === data.locationId);
+
+          if (location) {
+            console.log('[HomePage] Auto-opening pushed location:', location.companyName);
+
+            // Set the pushed location ID for visual indicator
+            setPushedLocationId(data.locationId);
+
+            // Auto-open the InfoWindow for this location
+            return {
+              ...prev,
+              selectedLocation: location,
+            };
+          } else {
+            console.warn('[HomePage] Pushed location not found in current locations:', data.locationId);
+            return prev;
+          }
+        });
+
+        // Clear the pushed indicator after 5 seconds
+        setTimeout(() => {
+          setPushedLocationId(null);
+        }, 5000);
+      });
+
+      console.log('[HomePage] Pusher listener initialized');
+    } catch (error) {
+      console.error('[HomePage] Error initializing Pusher:', error);
+      // Fail silently - real-time updates are optional
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (pusher) {
+        pusher.unsubscribe(PUSHER_CHANNELS.LOCATIONS);
+        console.log('[HomePage] Pusher listener cleaned up');
+      }
+    };
+  }, [state.locations]); // Re-subscribe when locations change
 
   /**
    * Handles marker click event
@@ -501,6 +567,7 @@ export default function HomePage(): JSX.Element {
               isOpen={true}
               onClose={handleInfoWindowClose}
               onUpdate={handleLocationUpdate}
+              isPushed={pushedLocationId === state.selectedLocation.id}
             />
           </div>
         </>
