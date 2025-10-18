@@ -475,8 +475,8 @@ export default function LocationMarker({
       )}
 
       <div
-        className="min-w-[280px] max-w-[320px] bg-white rounded-lg shadow-lg overflow-hidden"
-        style={{ maxWidth: '90vw', maxHeight: '85vh', overflowY: 'auto' }}
+        className="min-w-[300px] max-w-[400px] bg-white rounded-lg shadow-lg overflow-hidden"
+        style={{ maxWidth: '92vw', maxHeight: '90vh', overflowY: 'auto' }}
       >
         {/* Pushed Location Banner */}
         {isPushed && (
